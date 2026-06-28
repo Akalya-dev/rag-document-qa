@@ -3,19 +3,21 @@ import streamlit as st
 from dotenv import load_dotenv
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_google_genai import GoogleGenerativeAIEmbeddings, ChatGoogleGenerativeAI
+from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_chroma import Chroma
+from langchain_groq import ChatGroq
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnablePassthrough
 from langchain_core.output_parsers import StrOutputParser
 
 load_dotenv()
 
-# Read from Streamlit secrets (cloud) or .env file (local)
 try:
     GOOGLE_API_KEY = st.secrets["GOOGLE_API_KEY"]
+    GROQ_API_KEY = st.secrets["GROQ_API_KEY"]
 except:
     GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
+    GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
 def load_pdf(file_path):
     loader = PyPDFLoader(file_path)
@@ -39,9 +41,9 @@ def create_vectorstore(chunks):
     return vectorstore
 
 def build_qa_chain(vectorstore):
-    llm = ChatGoogleGenerativeAI(
-        model="gemini-2.0-flash",
-        google_api_key=GOOGLE_API_KEY
+    llm = ChatGroq(
+        model="llama-3.1-8b-instant",
+        api_key=GROQ_API_KEY
     )
     retriever = vectorstore.as_retriever(search_kwargs={"k": 3})
 
